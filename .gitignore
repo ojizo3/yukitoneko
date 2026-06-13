@@ -30,8 +30,10 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
+# env files — 実際の値(.env.local 等)は絶対にコミットしない
 .env*
+# ただしサンプル(キーは空・公開IDのみ)はコミットする
+!.env.local.example
 
 # vercel
 .vercel

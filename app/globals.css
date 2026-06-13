@@ -1,26 +1,143 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/*
+  「雪と猫」配色・トークン定義(Tailwind v4 CSSベース設定)
+  白基調・ミニマル。ダークモードは使わず常に白。
+*/
+@theme {
+  --color-bg: #ffffff; /* 背景: 白 */
+  --color-ink: #1a1a1a; /* メインテキスト: 濃いグレー */
+  --color-sub: #666666; /* サブテキスト: 中グレー */
+  --color-line: #ededed; /* 区切り線・枠 */
+  --color-snow: #e8f1f8; /* アクセント: 淡いブルー(控えめ) */
+
+  /* フォント: 英数は Inter、日本語は Noto Sans JP(next/font 経由) */
+  --font-sans:
+    var(--font-inter), var(--font-noto-jp), -apple-system, BlinkMacSystemFont,
+    "Hiragino Sans", "Yu Gothic", sans-serif;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  background: var(--color-bg);
+  color: var(--color-ink);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+}
+
+/* 横スクロール行: スクロールバーを隠す(矢印/ドラッグで操作) */
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* モーダルのフェードイン */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.animate-fade-in {
+  animation: fade-in 0.2s ease-out;
+}
+
+/* =========================================================
+   アンビエント演出(静かだけど寂しくない / サイトが小さく息をする)
+   すべて transform / opacity / color のみで GPU合成、軽量。
+   気づかない一歩手前の繊細さ。prefers-reduced-motion で全停止。
+   ========================================================= */
+
+/* 【1】サムネの呼吸: scale 1.00 → 1.02 → 1.00(約10秒周期)
+   ディレイ/周期は各カードが個別に inline style で持つ(--breathe-*)。 */
+@keyframes breathe {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.02);
+  }
+}
+.animate-breathe {
+  animation: breathe var(--breathe-dur, 10s) ease-in-out infinite;
+  animation-delay: var(--breathe-delay, 0s);
+  transform-origin: center;
+}
+
+/* 【2】NEW など強調タイトルのアンビエント発光: 明度をわずかに上下 */
+@keyframes label-glow {
+  0%,
+  100% {
+    color: var(--color-ink);
+  }
+  50% {
+    color: #7d7d7d;
+  }
+}
+.animate-glow {
+  animation: label-glow 4.5s ease-in-out infinite;
+}
+
+/* 【3】雪のアンビエント: 上→下へ非常にゆっくり。
+   位置/大きさ/速度/透明度は各粒が inline style(--snow-*)で個別に持つ。
+   ※ 真っ白は白背景で不可視のため、ごく淡い寒色グレーで「言われないと気づかない」濃さに。 */
+@keyframes snow-fall {
+  0% {
+    transform: translate3d(0, -10vh, 0);
+    opacity: 0;
+  }
+  12% {
+    opacity: var(--snow-opacity, 0.3);
+  }
+  88% {
+    opacity: var(--snow-opacity, 0.3);
+  }
+  100% {
+    transform: translate3d(var(--snow-drift, 8px), 62vh, 0);
+    opacity: 0;
+  }
+}
+.snow-ambient {
+  position: fixed;
+  inset: 0 0 auto 0;
+  height: 55vh;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+  /* 下端へ向けて自然にフェードアウト(ヘッダー周辺だけ雪が舞う印象に) */
+  -webkit-mask-image: linear-gradient(to bottom, #000 55%, transparent);
+  mask-image: linear-gradient(to bottom, #000 55%, transparent);
+}
+.snow-particle {
+  position: absolute;
+  top: 0;
+  left: var(--snow-left, 50%);
+  width: var(--snow-size, 3px);
+  height: var(--snow-size, 3px);
+  border-radius: 9999px;
+  background: rgba(150, 172, 194, 0.9);
+  animation: snow-fall var(--snow-dur, 22s) linear infinite;
+  animation-delay: var(--snow-delay, 0s);
+  will-change: transform, opacity;
+}
+
+/* 動きを抑えたいユーザーには一切アニメーションさせない */
+@media (prefers-reduced-motion: reduce) {
+  .animate-breathe,
+  .animate-glow,
+  .snow-particle {
+    animation: none !important;
+  }
+  .snow-ambient {
+    display: none;
+  }
 }
