@@ -1,5 +1,6 @@
 // フッター
 
+import Link from "next/link";
 import { SITE } from "@/lib/config";
 
 export default function Footer() {
@@ -10,7 +11,16 @@ export default function Footer() {
         <p>
           {SITE.name}(yukitoneko)— 青森・雪国で暮らす猫たちの動画
         </p>
-        <p>© {year} {SITE.name}</p>
+        <p className="flex items-center gap-2">
+          <span>© {year} {SITE.name}</span>
+          <span aria-hidden>・</span>
+          <Link
+            href="/privacy"
+            className="underline-offset-2 transition-colors hover:text-ink hover:underline"
+          >
+            プライバシーポリシー
+          </Link>
+        </p>
       </div>
     </footer>
   );

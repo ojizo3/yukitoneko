@@ -181,3 +181,21 @@ export async function getAllRows() {
     })),
   );
 }
+
+/**
+ * 関連動画を取得する(同じ再生リスト=同じ行から数本)。
+ *
+ * getAllRows() を再利用するため、playlistItems / videos.list の fetch は
+ * トップページと同じ URL になり Next の fetch キャッシュで共有される。
+ * → API クォータの追加消費はほぼ無い。
+ *
+ * 当該動画を含む行が見つからない場合(トップ未掲載の旧動画など)は、
+ * 最初に動画を持つ行(通常 NEW)から代替で返す。
+ */
+export async function getRelatedVideos(id: string, max = 6): Promise<Video[]> {
+  if (!API_KEY) return [];
+  const rows = await getAllRows();
+  const owner = rows.find((r) => r.videos.some((v) => v.id === id));
+  const pool = owner?.videos ?? rows.find((r) => r.videos.length > 0)?.videos ?? [];
+  return pool.filter((v) => v.id !== id).slice(0, max);
+}

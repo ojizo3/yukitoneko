@@ -1,13 +1,15 @@
 // 動画専用ページ /video/[id]
-// YouTube iframe で埋め込み再生し、タイトル・再生数・投稿日・説明文を表示する。
-// 後で SEO 用(構造化データ・OGP個別画像など)に拡張予定。
+// YouTube iframe で埋め込み再生し、タイトル・再生数・投稿日・説明文・関連動画を表示する。
+// SEO: ページ単位の generateMetadata(canonical/OGP/Twitter) と VideoObject(JSON-LD)。
 
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { getVideo } from "@/lib/youtube";
+import VideoCard from "@/components/VideoCard";
+import { getVideo, getRelatedVideos } from "@/lib/youtube";
+import { getDescription } from "@/lib/descriptions";
 import { formatViews, formatPublished } from "@/lib/format";
 import { SITE } from "@/lib/config";
 
@@ -16,29 +18,62 @@ export const revalidate = 3600;
 
 type Params = { params: Promise<{ id: string }> };
 
+// タイトルは「{動画タイトル}｜雪と猫」。全体で60字以内に収める。
+const TITLE_SUFFIX = `｜${SITE.name}`;
+function buildTitle(raw: string): string {
+  const max = 60 - TITLE_SUFFIX.length;
+  const base = raw.length > max ? `${raw.slice(0, max - 1)}…` : raw;
+  return `${base}${TITLE_SUFFIX}`;
+}
+
+// メタ用の説明文(独自解説 > YouTube description > サイト説明)を120字に整える。
+function metaDescription(id: string, ytDescription?: string): string {
+  const text = getDescription(id, ytDescription) || SITE.description;
+  const oneLine = text.replace(/\s+/g, " ").trim();
+  return oneLine.length > 120 ? `${oneLine.slice(0, 119)}…` : oneLine;
+}
+
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { id } = await params;
   const video = await getVideo(id);
   if (!video) return { title: "動画が見つかりません" };
-  const desc = video.description?.slice(0, 120) || SITE.description;
+
+  const title = buildTitle(video.title);
+  const desc = metaDescription(id, video.description);
+  const url = `${SITE.url}/video/${id}`;
+  const images = video.thumbnail ? [video.thumbnail] : undefined;
+
   return {
-    title: video.title,
+    title: { absolute: title },
     description: desc,
     alternates: { canonical: `/video/${id}` },
     openGraph: {
       type: "video.other",
-      title: video.title,
+      title,
       description: desc,
-      url: `${SITE.url}/video/${id}`,
-      images: video.thumbnail ? [video.thumbnail] : undefined,
+      url,
+      images,
+      locale: "ja_JP",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description: desc,
+      images,
     },
   };
 }
 
 export default async function VideoPage({ params }: Params) {
   const { id } = await params;
-  const video = await getVideo(id);
+  const [video, related] = await Promise.all([
+    getVideo(id),
+    getRelatedVideos(id),
+  ]);
   if (!video) notFound();
+
+  // 表示する説明文: 独自解説があれば優先、なければ YouTube の description。
+  const description = getDescription(video.id, video.description);
 
   const meta = [formatViews(video.viewCount), formatPublished(video.publishedAt)]
     .filter(Boolean)
@@ -47,6 +82,9 @@ export default async function VideoPage({ params }: Params) {
   const src =
     `https://www.youtube.com/embed/${video.id}` +
     `?autoplay=1&rel=0&modestbranding=1&playsinline=1`;
+
+  // 構造化データ用の説明文(本文と同じ。空ならサイト説明で補完)
+  const jsonLdDescription = description || SITE.description;
 
   return (
     <>
@@ -78,12 +116,24 @@ export default async function VideoPage({ params }: Params) {
         </h1>
         {meta && <p className="mt-1 text-sm text-sub">{meta}</p>}
 
-        {/* 説明文 */}
-        {video.description ? (
+        {/* 説明文(独自解説 or YouTube description) */}
+        {description ? (
           <p className="mt-4 whitespace-pre-wrap text-sm leading-relaxed text-ink/80">
-            {video.description}
+            {description}
           </p>
         ) : null}
+
+        {/* 関連動画(同じ再生リストから数本) */}
+        {related.length > 0 && (
+          <section className="mt-10">
+            <h2 className="text-base font-bold text-ink">関連動画</h2>
+            <div className="mt-3 grid grid-cols-3 gap-3 sm:gap-4">
+              {related.map((v) => (
+                <VideoCard key={v.id} video={v} />
+              ))}
+            </div>
+          </section>
+        )}
 
         {/* 構造化データ(VideoObject) */}
         <script
@@ -93,7 +143,7 @@ export default async function VideoPage({ params }: Params) {
               "@context": "https://schema.org",
               "@type": "VideoObject",
               name: video.title,
-              description: video.description || SITE.description,
+              description: jsonLdDescription,
               thumbnailUrl: video.thumbnail || undefined,
               uploadDate: video.publishedAt || undefined,
               contentUrl: `https://www.youtube.com/watch?v=${video.id}`,
