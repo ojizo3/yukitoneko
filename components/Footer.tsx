@@ -10,15 +10,7 @@ export default function Footer() {
         <p>
           {SITE.name}(yukitoneko)— 青森・雪国で暮らす猫たちの動画
         </p>
-        <p>
-          © {year} {SITE.name} ・ 本業:
-          <a
-            href="https://jitozu.com"
-            className="underline-offset-2 hover:underline"
-          >
-            字と図(jitozu.com)
-          </a>
-        </p>
+        <p>© {year} {SITE.name}</p>
       </div>
     </footer>
   );

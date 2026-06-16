@@ -1,7 +1,5 @@
 // Aboutページ(/about)
 // 白基調・シンプル。ヘッダーのロゴクリックでトップへ戻れる(Header側で対応済み)。
-//
-// ▼▼ 本文は仮置きです。確定テキストをもらったら <article> 内を差し替えてください ▼▼
 
 import type { Metadata } from "next";
 import Header from "@/components/Header";
@@ -32,21 +30,18 @@ export default function AboutPage() {
             About
           </h1>
 
-          {/* ── ここから仮テキスト(確定次第差し替え) ── */}
           <div className="mt-8 space-y-6 text-[15px] leading-8 text-ink/90">
             <p>
               「{SITE.name}」は、青森・雪国で暮らす猫たちの日常を記録した
-              YouTubeチャンネルです。
+              動画日記です。一緒に暮らして役に立った猫DIY、実験集、
+              ずっと見ていられる癒しの映像など、
+              雪国ならではの静かな時間と猫(トラジ)を多めにお届けしています。
             </p>
             <p>
-              猫DIY、実験ショート、ずっと見ていられる癒しの映像など、
-              雪国ならではの静かな時間をお届けしています。
-            </p>
-            <p className="text-sm text-sub">
-              ※ この文章は仮のものです。正式な紹介文を差し替えてください。
+              少しでも小さな癒しになれば幸いです。
+              みなさまからコメント・反応をお待ちしております。(YouTubeの方に)
             </p>
           </div>
-          {/* ── 仮テキストここまで ── */}
         </article>
       </main>
 

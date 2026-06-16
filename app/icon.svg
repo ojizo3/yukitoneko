@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <g fill="#000000">
+    <!-- 左耳 -->
+    <path d="M22 14 L48 40 L20 48 Z" />
+    <!-- 右耳 -->
+    <path d="M78 14 L52 40 L80 48 Z" />
+    <!-- 丸顔 -->
+    <ellipse cx="50" cy="58" rx="31" ry="27" />
+  </g>
+</svg>
