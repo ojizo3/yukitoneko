@@ -52,8 +52,11 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
+  modal,
 }: Readonly<{
   children: React.ReactNode;
+  // @modal パラレルスロット。動画モーダルの器(非表示時は @modal/default.tsx の null)。
+  modal: React.ReactNode;
 }>) {
   return (
     <html
@@ -62,6 +65,7 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col bg-bg text-ink">
         {children}
+        {modal}
       </body>
     </html>
   );

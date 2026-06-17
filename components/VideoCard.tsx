@@ -29,6 +29,10 @@ export default function VideoCard({ video }: { video: Video }) {
   return (
     <Link
       href={`/video/${video.id}`}
+      // モーダルを開くとき背景の一覧が先頭へスクロールしないよう抑止
+      // (Next は fixed 配置のモーダルをスクロール対象探索でスキップするため明示が必要)。
+      // フルページ遷移時は常に先頭表示なので、どの利用箇所でも副作用なし。
+      scroll={false}
       className="group block w-full select-none text-left [touch-action:manipulation] [-webkit-tap-highlight-color:transparent] [-webkit-touch-callout:none]"
     >
       {/* 9:16 縦サムネ枠。常時ゆっくり呼吸(scale)。ホバー拡大は内側の img に当てて競合回避 */}
