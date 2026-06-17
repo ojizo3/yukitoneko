@@ -42,6 +42,13 @@ export interface Product {
 /** 動画ID → 商品配列。最初は空。ここに追記していく。 */
 export const PRODUCTS: Record<string, Product[]> = {
   // ここに videoId: [ { name: "...", ... } ] を追記してください。
+  "TaBLhrXpS_k": [
+    {
+      name: "ニシキヘビのぬいぐるみ",
+      amazonUrl: "https://amzn.to/4fPAxHh",
+      note: "北海道旅行の際に水族館で購入したものです。すっかり買った本人は大きく成長してしまい、代わりに猫のトラジがお気に入りで使っています。",
+    },
+  ],
 };
 
 /**
