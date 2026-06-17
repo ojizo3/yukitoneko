@@ -10,6 +10,8 @@ import Footer from "@/components/Footer";
 import VideoCard from "@/components/VideoCard";
 import { getVideo, getRelatedVideos } from "@/lib/youtube";
 import { getDescription } from "@/lib/descriptions";
+import { getProducts } from "@/lib/products";
+import ProductRecommend from "@/components/ProductRecommend";
 import { formatViews, formatPublished } from "@/lib/format";
 import { SITE } from "@/lib/config";
 
@@ -122,6 +124,9 @@ export default async function VideoPage({ params }: Params) {
             {description}
           </p>
         ) : null}
+
+        {/* この動画で使ったもの(アフィリエイト)。商品が無ければ何も出ない。 */}
+        <ProductRecommend products={getProducts(id)} />
 
         {/* 関連動画(同じ再生リストから数本) */}
         {related.length > 0 && (
