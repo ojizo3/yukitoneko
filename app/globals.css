@@ -50,19 +50,19 @@ body {
   animation: fade-in 0.2s ease-out;
 }
 
-/* モーダル内「この動画のアイテム」ボタンのごく控えめな浮遊。
-   transform のみ・微小(4px)で、気づかない一歩手前の繊細さ。 */
+/* モーダル内「この動画のアイテム」ボタンの浮遊。
+   transform のみ。スマホでもはっきり視認できる揺れ幅(上下 約12px)。 */
 @keyframes float-soft {
   0%,
   100% {
-    transform: translateY(0);
+    transform: translateY(-6px);
   }
   50% {
-    transform: translateY(-4px);
+    transform: translateY(6px);
   }
 }
 .animate-float-soft {
-  animation: float-soft 3.5s ease-in-out infinite;
+  animation: float-soft 2.4s ease-in-out infinite;
 }
 
 /* 日記型カードの本文(note)用の serif 寄りスタック。

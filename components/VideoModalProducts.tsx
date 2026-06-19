@@ -40,7 +40,7 @@ export default function VideoModalProducts({
         onClick={() => setOpen(true)}
         aria-haspopup="dialog"
         aria-expanded={open}
-        className="animate-float-soft absolute bottom-3 right-3 z-10 inline-flex items-center gap-1.5 rounded-full border border-line bg-bg/90 py-2 pl-3 pr-3.5 text-xs font-medium text-ink shadow-md backdrop-blur transition-colors hover:bg-snow"
+        className="animate-float-soft absolute bottom-3 right-3 z-10 inline-flex items-center gap-1.5 rounded-full border border-[#E8D98A] bg-[#FFF9C6] py-2 pl-3 pr-3.5 text-xs font-medium text-[#1a1a1a] shadow-md transition-colors hover:bg-[#FFF4A8]"
       >
         {/* bag(買い物袋)系アイコン */}
         <svg
