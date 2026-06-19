@@ -4,11 +4,12 @@
 // 埋め込み方式・同じデータ整形を使うが、SEO要素(JSON-LD・meta・OGP・関連動画)は
 // 含めない —— それらはフルページ専用のまま据え置く。
 //
-// 解説文の下に ProductRecommend を出す(商品ゼロなら何も出ない)。
+// 商品ありの動画では、プレイヤー右下に浮くボタン(VideoModalProducts)を重ねる。
+// 商品ゼロなら何も差し込まない(既存表示に一切影響しない)。
 
 import type { Video } from "@/types/video";
 import type { Product } from "@/lib/products";
-import ProductRecommend from "@/components/ProductRecommend";
+import VideoModalProducts from "@/components/VideoModalProducts";
 import { getDescription } from "@/lib/descriptions";
 import { formatViews, formatPublished } from "@/lib/format";
 
@@ -31,15 +32,23 @@ export default function VideoModalBody({
 
   return (
     <div className="p-4 sm:p-5">
-      {/* 縦動画(9:16)プレーヤー。横長動画は YouTube 側で自動レターボックス。 */}
-      <div className="mx-auto aspect-[9/16] w-full max-w-[360px] overflow-hidden rounded-xl bg-black">
-        <iframe
-          className="h-full w-full"
-          src={src}
-          title={video.title}
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-          allowFullScreen
-        />
+      {/* 縦動画(9:16)プレーヤー。横長動画は YouTube 側で自動レターボックス。
+          relative ラップは、商品ありのとき右下に浮くボタンを重ねるため。 */}
+      <div className="relative mx-auto aspect-[9/16] w-full max-w-[360px]">
+        <div className="h-full w-full overflow-hidden rounded-xl bg-black">
+          <iframe
+            className="h-full w-full"
+            src={src}
+            title={video.title}
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowFullScreen
+          />
+        </div>
+
+        {/* この動画のアイテム(アフィリエイト)。商品が無ければ何も出さない。
+            浮くボタン+日記型カードの開閉は VideoModalProducts 内で完結し、
+            Modal のスクロール保持・閉じ方には一切干渉しない。 */}
+        {products.length > 0 && <VideoModalProducts products={products} />}
       </div>
 
       {/* タイトル・メタ */}
@@ -54,9 +63,6 @@ export default function VideoModalBody({
           {description}
         </p>
       ) : null}
-
-      {/* この動画で使ったもの(アフィリエイト)。商品が無ければ何も出ない。 */}
-      <ProductRecommend products={products} />
     </div>
   );
 }

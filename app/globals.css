@@ -50,6 +50,29 @@ body {
   animation: fade-in 0.2s ease-out;
 }
 
+/* モーダル内「この動画のアイテム」ボタンのごく控えめな浮遊。
+   transform のみ・微小(4px)で、気づかない一歩手前の繊細さ。 */
+@keyframes float-soft {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+.animate-float-soft {
+  animation: float-soft 3.5s ease-in-out infinite;
+}
+
+/* 日記型カードの本文(note)用の serif 寄りスタック。
+   追加フォントは読み込まず、OS搭載の明朝/serif を使う(ページ重量を増やさない)。 */
+.font-serif-jp {
+  font-family:
+    Georgia, "Times New Roman", "Hiragino Mincho ProN", "Yu Mincho",
+    "YuMincho", "Noto Serif JP", serif;
+}
+
 /* =========================================================
    アンビエント演出(静かだけど寂しくない / サイトが小さく息をする)
    すべて transform / opacity / color のみで GPU合成、軽量。
@@ -134,6 +157,7 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .animate-breathe,
   .animate-glow,
+  .animate-float-soft,
   .snow-particle {
     animation: none !important;
   }
