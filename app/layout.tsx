@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, Noto_Sans_JP } from "next/font/google";
+import { GoogleAnalytics } from "@next/third-parties/google";
 import "./globals.css";
 import { SITE } from "@/lib/config";
 
@@ -66,6 +67,8 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col bg-bg text-ink">
         {children}
         {modal}
+        {/* GA4。@next/third-parties が gtag を最適タイミングで読み込む。 */}
+        <GoogleAnalytics gaId="G-KM79PJE7BM" />
       </body>
     </html>
   );
