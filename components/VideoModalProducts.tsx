@@ -21,6 +21,7 @@
 
 import { useState } from "react";
 import type { Product } from "@/lib/products";
+import { renderNote } from "@/lib/note";
 
 export default function VideoModalProducts({
   products,
@@ -133,10 +134,11 @@ export default function VideoModalProducts({
                   {product.name}
                 </h3>
 
-                {/* note を本文として大きめ・serif 寄りで読ませる。 */}
+                {/* note を本文として大きめ・serif 寄りで読ませる。
+                    [ラベル](値) の記法は renderNote が内部/外部リンクに変換。 */}
                 {product.note ? (
                   <p className="font-serif-jp mt-2 text-[15px] leading-loose text-ink/85">
-                    {product.note}
+                    {renderNote(product.note)}
                   </p>
                 ) : null}
 

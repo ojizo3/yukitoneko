@@ -9,6 +9,7 @@
 // セクション末尾にアフィリエイト開示表記(日本のステマ規制対応)を必ず出す。
 
 import type { Product } from "@/lib/products";
+import { renderNote } from "@/lib/note";
 
 export default function ProductRecommend({
   products,
@@ -49,7 +50,7 @@ export default function ProductRecommend({
               </h3>
               {product.note ? (
                 <p className="mt-1 text-xs leading-relaxed text-sub">
-                  {product.note}
+                  {renderNote(product.note)}
                 </p>
               ) : null}
 
