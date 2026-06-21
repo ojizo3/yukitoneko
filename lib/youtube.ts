@@ -69,6 +69,7 @@ async function fetchJson<T>(url: string): Promise<T | null> {
 
 interface PlaylistItemsResponse {
   items?: { contentDetails?: { videoId?: string } }[];
+  nextPageToken?: string;
 }
 
 /** 再生リストから動画ID一覧を取得(公開順を保持) */
@@ -198,4 +199,88 @@ export async function getRelatedVideos(id: string, max = 6): Promise<Video[]> {
   const owner = rows.find((r) => r.videos.some((v) => v.id === id));
   const pool = owner?.videos ?? rows.find((r) => r.videos.length > 0)?.videos ?? [];
   return pool.filter((v) => v.id !== id).slice(0, max);
+}
+
+// =====================================================================
+// 回遊性向上(人気の動画行・カテゴリー全動画ページ)で使う取得層。
+// すべて「追加」のみ。既存の getAllRows / getVideo などには手を入れない。
+// 既存と同じ fetch(revalidate付き)を使うので、同一URLは Next の
+// fetchキャッシュで共有され、API消費は最小に保たれる。
+// =====================================================================
+
+/** 再生リストの全動画IDをページングで取得(公開順=新しい順を保持) */
+async function fetchAllPlaylistVideoIds(playlistId: string): Promise<string[]> {
+  const ids: string[] = [];
+  let pageToken = "";
+  // 無限ループ防止のため最大ページ数を控えめに上限化(50件×40=2000本)。
+  for (let page = 0; page < 40; page++) {
+    const url =
+      `${API_BASE}/playlistItems?part=contentDetails&maxResults=50` +
+      `&playlistId=${encodeURIComponent(playlistId)}` +
+      (pageToken ? `&pageToken=${pageToken}` : "") +
+      `&key=${API_KEY}`;
+    const data = await fetchJson<PlaylistItemsResponse>(url);
+    if (!data?.items) break;
+    for (const item of data.items) {
+      const vid = item.contentDetails?.videoId;
+      if (vid) ids.push(vid);
+    }
+    if (!data.nextPageToken) break;
+    pageToken = data.nextPageToken;
+  }
+  return ids;
+}
+
+/** 動画ID配列の詳細を 50件ずつバッチ取得(videos.list の上限対応・順序維持) */
+async function fetchVideoDetailsAll(ids: string[]): Promise<Video[]> {
+  const videos: Video[] = [];
+  for (let i = 0; i < ids.length; i += 50) {
+    const batch = await fetchVideoDetails(ids.slice(i, i + 50));
+    videos.push(...batch);
+  }
+  return videos;
+}
+
+/**
+ * チャンネルの全アップロード動画を取得(新しい順)。
+ * 人気行・「人気」「NEW」カテゴリーページの共通データ源。
+ * 内部の fetch URL は呼び出し間で同一になり Next のキャッシュで共有される。
+ */
+export async function getAllChannelVideos(): Promise<Video[]> {
+  if (!API_KEY || !CHANNEL_ID) return [];
+  const ids = await fetchAllPlaylistVideoIds(uploadsPlaylistId(CHANNEL_ID));
+  return fetchVideoDetailsAll(ids);
+}
+
+/**
+ * 再生数の多い順(降順)に並べた動画を取得する。
+ * 既定で上位 limit 本(トップの「人気の動画」行は 15 本)を返す。
+ * limit を省くと全件(カテゴリーページの /category/popular 用)。
+ */
+export async function getPopularVideos(limit?: number): Promise<Video[]> {
+  const all = await getAllChannelVideos();
+  const sorted = [...all].sort(
+    (a, b) => (b.viewCount ?? 0) - (a.viewCount ?? 0),
+  );
+  return typeof limit === "number" ? sorted.slice(0, limit) : sorted;
+}
+
+/**
+ * カテゴリー(行)の全動画を取得する。「すべて見る」一覧ページ用。
+ *   - "popular" : 全動画を再生数降順
+ *   - "new"     : 全アップロードを新しい順
+ *   - それ以外  : ROWS の該当 playlist を全件(新しい順)
+ * 未知のslug・未設定envは空配列(ページ側で notFound / 空表示)。
+ */
+export async function getCategoryVideos(slug: string): Promise<Video[]> {
+  if (!API_KEY) return [];
+  if (slug === "popular") return getPopularVideos();
+  if (slug === "new") return getAllChannelVideos();
+
+  const row = ROWS.find((r) => r.key === slug);
+  if (!row || row.source !== "playlist" || !row.playlistEnv) return [];
+  const playlistId = process.env[row.playlistEnv];
+  if (!playlistId) return [];
+  const ids = await fetchAllPlaylistVideoIds(playlistId);
+  return fetchVideoDetailsAll(ids);
 }

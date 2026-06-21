@@ -6,6 +6,7 @@
 // - スマホは中央2列がメイン、左右が半分見切れる(scroll-snap)
 
 import { useRef, useState, useCallback, useEffect } from "react";
+import Link from "next/link";
 import type { Video } from "@/types/video";
 import VideoCard from "@/components/VideoCard";
 
@@ -15,11 +16,14 @@ export default function VideoRow({
   title,
   videos,
   highlight = false,
+  href,
 }: {
   title: string;
   videos: Video[];
   /** タイトルに控えめなアンビエント発光を付ける(NEW行など) */
   highlight?: boolean;
+  /** 指定すると見出し右に「すべて見る →」を出す(カテゴリー全動画ページへ) */
+  href?: string;
 }) {
   const scrollerRef = useRef<HTMLDivElement>(null);
   const [canLeft, setCanLeft] = useState(false);
@@ -104,10 +108,22 @@ export default function VideoRow({
         >
           {title}
         </h2>
-        {/* PC用の矢印 */}
-        <div className="hidden gap-1 sm:flex">
-          <Arrow dir="left" disabled={!canLeft} onClick={() => scrollByPage(-1)} />
-          <Arrow dir="right" disabled={!canRight} onClick={() => scrollByPage(1)} />
+        {/* 右側クラスタ: すべて見る → と PC用矢印を同じ行に並べる
+            (新しい行を作らないので行の高さは不変=段が間延びしない)。 */}
+        <div className="flex items-center gap-3">
+          {href ? (
+            <Link
+              href={href}
+              className="whitespace-nowrap text-sm text-sub transition-colors hover:text-ink"
+            >
+              すべて見る →
+            </Link>
+          ) : null}
+          {/* PC用の矢印 */}
+          <div className="hidden gap-1 sm:flex">
+            <Arrow dir="left" disabled={!canLeft} onClick={() => scrollByPage(-1)} />
+            <Arrow dir="right" disabled={!canRight} onClick={() => scrollByPage(1)} />
+          </div>
         </div>
       </div>
 

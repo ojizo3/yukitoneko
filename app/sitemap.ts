@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { SITE } from "@/lib/config";
+import { SITE, ROWS } from "@/lib/config";
 import { getAllRows } from "@/lib/youtube";
 
 // 1時間ごとに再生成(動画一覧の取得と同じキャッシュ方針)
@@ -12,6 +12,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE.url}/about`, changeFrequency: "monthly", priority: 0.5 },
     { url: `${SITE.url}/privacy`, changeFrequency: "yearly", priority: 0.3 },
   ];
+
+  // カテゴリー全動画ページ(人気 + 既存の全行)。回遊性向上で新設したhubページ。
+  const categorySlugs = ["popular", ...ROWS.map((r) => r.key)];
+  const categoryEntries: MetadataRoute.Sitemap = categorySlugs.map((slug) => ({
+    url: `${SITE.url}/category/${slug}`,
+    changeFrequency: "weekly",
+    priority: 0.6,
+  }));
 
   // 全行から動画IDを集約(重複除去)。API未設定・失敗時は空になり固定ページのみ。
   const rows = await getAllRows();
@@ -30,5 +38,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }
   }
 
-  return [...staticEntries, ...videoEntries];
+  return [...staticEntries, ...categoryEntries, ...videoEntries];
 }
