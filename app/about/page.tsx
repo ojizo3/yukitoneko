@@ -4,7 +4,7 @@
 import type { Metadata } from "next";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { SITE } from "@/lib/config";
+import { SITE, OG_IMAGE } from "@/lib/config";
 
 export const metadata: Metadata = {
   title: "About",
@@ -16,6 +16,7 @@ export const metadata: Metadata = {
     description: `${SITE.name}について。`,
     url: `${SITE.url}/about`,
     locale: "ja_JP",
+    images: [OG_IMAGE],
   },
 };
 

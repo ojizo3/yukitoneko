@@ -99,6 +99,21 @@ export const SOCIALS: SocialLink[] = [
   },
 ];
 
+/**
+ * サイト共通のデフォルトOGP画像(1200×630, public/opengraph-image.jpg)。
+ * 各ページが openGraph を再定義すると親(layout)の画像は引き継がれない
+ * (Next の metadata はネストをディープマージしない)ため、og:image を出したい
+ * ページの openGraph.images にこれを明示的に渡す。相対URLは metadataBase で
+ * 絶対URLに解決される。
+ * 動画ページ /video/[id] は各動画のサムネを使うので、ここは適用しない。
+ */
+export const OG_IMAGE = {
+  url: "/opengraph-image.jpg",
+  width: 1200,
+  height: 630,
+  alt: "雪と猫 YUKItoNEKO",
+} as const;
+
 /** サイトの基本情報(メタデータ・SEOで使用) */
 export const SITE = {
   name: "雪と猫",

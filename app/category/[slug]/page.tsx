@@ -17,7 +17,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import VideoGrid from "@/components/VideoGrid";
 import { getCategoryVideos } from "@/lib/youtube";
-import { ROWS, SITE } from "@/lib/config";
+import { ROWS, SITE, OG_IMAGE } from "@/lib/config";
 
 // 動画一覧の取得と同じ1時間ISR。
 export const revalidate = 3600;
@@ -53,6 +53,7 @@ export async function generateMetadata({
       description,
       url,
       locale: "ja_JP",
+      images: [OG_IMAGE],
     },
   };
 }

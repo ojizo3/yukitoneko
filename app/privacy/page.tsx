@@ -5,7 +5,7 @@
 import type { Metadata } from "next";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { SITE } from "@/lib/config";
+import { SITE, OG_IMAGE } from "@/lib/config";
 
 export const metadata: Metadata = {
   title: "プライバシーポリシー",
@@ -17,6 +17,7 @@ export const metadata: Metadata = {
     description: `${SITE.name}のプライバシーポリシー。`,
     url: `${SITE.url}/privacy`,
     locale: "ja_JP",
+    images: [OG_IMAGE],
   },
 };
 

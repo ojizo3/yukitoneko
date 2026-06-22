@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Noto_Sans_JP } from "next/font/google";
 import { GoogleAnalytics } from "@next/third-parties/google";
 import "./globals.css";
-import { SITE } from "@/lib/config";
+import { SITE, OG_IMAGE } from "@/lib/config";
 
 // 英数: Inter
 const inter = Inter({
@@ -43,11 +43,14 @@ export const metadata: Metadata = {
     description: SITE.description,
     url: SITE.url,
     locale: "ja_JP",
+    // サイト共通のデフォルトOGP画像(1200×630)。metadataBase で絶対URLに解決。
+    images: [OG_IMAGE],
   },
   twitter: {
     card: "summary_large_image",
     title: `${SITE.name} | 雪国で暮らす猫たちの動画`,
     description: SITE.description,
+    images: [OG_IMAGE.url],
   },
 };
 
