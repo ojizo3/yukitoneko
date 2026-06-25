@@ -23,7 +23,7 @@ export default function ProductHeroCard({ product }: { product: Product }) {
     <article className="overflow-hidden rounded-2xl border border-line bg-bg">
       {/* 商品画像: 主役。正方形エリアいっぱいに大きく見せる。 */}
       {data.imageUrl ? (
-        <div className="flex aspect-square items-center justify-center bg-snow p-4">
+        <div className="flex aspect-square items-center justify-center bg-[#fafafa] p-4">
           {/* Amazon配信の素材画像。既存方針に合わせ next/image を使わず素の img(遅延読み込み)。 */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img

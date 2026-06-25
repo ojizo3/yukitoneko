@@ -28,6 +28,14 @@ body {
   font-family: var(--font-sans);
 }
 
+/* アンカー(動画隅の浮くボタン → 商品カード)へのスムーズスクロール。
+   動きを抑えたいユーザーには適用しない。 */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
 /* 横スクロール行: スクロールバーを隠す(矢印/ドラッグで操作) */
 .no-scrollbar {
   -ms-overflow-style: none;

@@ -13,6 +13,7 @@ import { getDescription } from "@/lib/descriptions";
 import { getProducts } from "@/lib/products";
 import ProductRecommend from "@/components/ProductRecommend";
 import ProductHeroCard from "@/components/ProductHeroCard";
+import { renderNote } from "@/lib/note";
 import { formatViews, formatPublished } from "@/lib/format";
 import { SITE } from "@/lib/config";
 
@@ -125,10 +126,44 @@ export default async function VideoPage({ params }: Params) {
             商品が無い動画では従来どおり中央寄せの動画のみ(見た目は不変)。 */}
         {heroProducts.length > 0 ? (
           <div className="mt-4 flex flex-col gap-5 lg:flex-row lg:items-start lg:gap-6">
-            <div className="mx-auto aspect-[9/16] w-full max-w-[420px] shrink-0 overflow-hidden rounded-xl bg-black shadow-lg lg:mx-0 lg:w-[380px]">
+            <div className="relative mx-auto aspect-[9/16] w-full max-w-[420px] shrink-0 overflow-hidden rounded-xl bg-black shadow-lg lg:mx-0 lg:w-[380px]">
               {player}
+
+              {/* スマホ専用: 動画隅にフワフワ浮くボタン。タップで下の商品カードへスムーズスクロール。
+                  PCは右にカードが見えているので非表示(lg:hidden)。モーダルの float-soft 思想を流用。 */}
+              <a
+                href="#video-items"
+                className="animate-float-soft absolute bottom-3 right-3 z-10 inline-flex items-center gap-1.5 rounded-full border border-[#E8D98A] bg-[#FFF9C6] py-2 pl-3 pr-3.5 text-xs font-medium text-[#1a1a1a] shadow-md transition-colors hover:bg-[#FFF4A8] lg:hidden"
+              >
+                {/* 買い物袋アイコン */}
+                <svg
+                  width="15"
+                  height="15"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  aria-hidden
+                  className="shrink-0"
+                >
+                  <path
+                    d="M6 8h12l-.8 11.2a2 2 0 0 1-2 1.8H8.8a2 2 0 0 1-2-1.8L6 8Z"
+                    stroke="currentColor"
+                    strokeWidth="1.7"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M9 8V6.5a3 3 0 0 1 6 0V8"
+                    stroke="currentColor"
+                    strokeWidth="1.7"
+                    strokeLinecap="round"
+                  />
+                </svg>
+                この動画のアイテム
+              </a>
             </div>
-            <div className="flex flex-col gap-4 lg:min-w-0 lg:flex-1">
+            <div
+              id="video-items"
+              className="flex scroll-mt-20 flex-col gap-4 lg:min-w-0 lg:flex-1"
+            >
               {heroProducts.map((product, i) => (
                 <ProductHeroCard key={`hero-${i}`} product={product} />
               ))}
@@ -141,16 +176,28 @@ export default async function VideoPage({ params }: Params) {
         )}
 
         {/* タイトル・メタ */}
-        <h1 className="mt-5 text-lg font-bold leading-snug text-ink sm:text-xl">
+        <h1 className="mt-6 text-lg font-bold leading-snug text-ink sm:text-xl">
           {video.title}
         </h1>
         {meta && <p className="mt-1 text-sm text-sub">{meta}</p>}
 
-        {/* 説明文(独自解説 or YouTube description) */}
+        {/* 詳細解説(独自解説 or YouTube description)。初期は閉じたアコーディオン。
+            展開後も解説文中の [ラベル](動画ID) は内部リンクとして機能する(renderNote)。 */}
         {description ? (
-          <p className="mt-4 whitespace-pre-wrap text-sm leading-relaxed text-ink/80">
-            {description}
-          </p>
+          <details className="group mt-5 rounded-xl border border-line px-4 py-3">
+            <summary className="flex cursor-pointer select-none list-none items-center justify-between text-sm font-medium text-ink [&::-webkit-details-marker]:hidden">
+              <span>詳細解説</span>
+              <span
+                aria-hidden
+                className="text-sub transition-transform duration-200 group-open:rotate-180"
+              >
+                ▾
+              </span>
+            </summary>
+            <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-ink/80">
+              {renderNote(description)}
+            </p>
+          </details>
         ) : null}
 
         {/* この動画で使ったもの(従来の自前カード)。該当が無ければ何も出ない。
