@@ -10,6 +10,7 @@
 
 import type { Product } from "@/lib/products";
 import { renderNote } from "@/lib/note";
+import EasyLinkCard from "@/components/EasyLinkCard";
 
 export default function ProductRecommend({
   products,
@@ -19,12 +20,26 @@ export default function ProductRecommend({
   // 商品が無ければ何も描画しない
   if (!products || products.length === 0) return null;
 
+  // もしも EasyLink を持つ商品は専用カード、それ以外は従来の自前カードで描画する。
+  const easyLinks = products.filter((p) => p.easyLinkHtml);
+  const cards = products.filter((p) => !p.easyLinkHtml);
+
   return (
     <section className="mt-10">
       <h2 className="text-base font-bold text-ink">この動画で使ったもの</h2>
 
+      {/* もしも EasyLink(かんたんリンク)カード。複数あれば縦に並べる。 */}
+      {easyLinks.length > 0 && (
+        <div className="mt-4 flex flex-col gap-4">
+          {easyLinks.map((product, i) => (
+            <EasyLinkCard key={`easylink-${i}`} html={product.easyLinkHtml!} />
+          ))}
+        </div>
+      )}
+
+      {cards.length > 0 && (
       <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
-        {products.map((product, i) => (
+        {cards.map((product, i) => (
           <article
             key={`${product.name}-${i}`}
             className="flex gap-4 rounded-xl border border-line p-4"
@@ -83,6 +98,7 @@ export default function ProductRecommend({
           </article>
         ))}
       </div>
+      )}
 
       {/* アフィリエイト開示表記(ステマ規制対応・必須) */}
       <p className="mt-4 text-xs leading-relaxed text-sub">

@@ -37,16 +37,36 @@ export interface Product {
   rakutenUrl?: string;
   /** 商品への一言(任意)。 */
   note?: string;
+  /**
+   * もしもアフィリエイト「かんたんリンク」(EasyLink)のコード全文。任意。
+   * これが指定されている商品は、上記 amazonUrl/rakutenUrl/image/note の自前カード
+   * ではなく、もしも配布の EasyLink カード(Amazon・楽天の2ボタン)を描画する。
+   * もしも管理画面でコピーした HTML を丸ごと貼る。
+   */
+  easyLinkHtml?: string;
 }
 
 /** 動画ID → 商品配列。最初は空。ここに追記していく。 */
 export const PRODUCTS: Record<string, Product[]> = {
   // ここに videoId: [ { name: "...", ... } ] を追記してください。
+  // 【EasyLink プレビュー検証用・暫定】本来はニシキヘビ用 EasyLink を入れる場所。
+  // 仕組み確認のため、サンプルの SONGWAY 猫じゃらしの EasyLink コードを暫定で投入。
+  // (本実装時は Suu がスプシ H列で管理する正規コードに差し替える)
   "TaBLhrXpS_k": [
     {
-      name: "ニシキヘビのぬいぐるみ",
-      amazonUrl: "https://amzn.to/4fPAxHh",
-      note: "北海道旅行の際に水族館で購入したものです。すっかり買った本人は大きく成長してしまい、代わりに猫のトラジがお気に入りで使っています。",
+      name: "SONGWAY 猫じゃらし 昆虫 蝶々",
+      easyLinkHtml: `<!-- START MoshimoAffiliateEasyLink -->
+<script type="text/javascript">
+(function(b,c,f,g,a,d,e){b.MoshimoAffiliateObject=a;
+b[a]=b[a]||function(){arguments.currentScript=c.currentScript
+||c.scripts[c.scripts.length-2];(b[a].q=b[a].q||[]).push(arguments)};
+c.getElementById(a)||(d=c.createElement(f),d.src=g,
+d.id=a,e=c.getElementsByTagName("body")[0],e.appendChild(d))})
+(window,document,"script","//dn.msmstatic.com/site/cardlink/bundle.js?20220329","msmaflink");
+msmaflink({"n":"SONGWAY 猫 おもちゃ 猫じゃらし ねこ玩具 昆虫 蝶々 大飛ぶ虫 8個 釣り竿付き","b":"SONGWAY","t":"YJP-070","d":"https:\/\/m.media-amazon.com","c_p":"\/images\/I","p":["\/41YnVpQGqHL._SL500_.jpg"],"u":{"u":"https:\/\/www.amazon.co.jp\/dp\/B0BQLQVH1X","t":"amazon","r_v":""},"v":"2.1","b_l":[{"id":1,"u_tx":"Amazonで見る","u_bc":"#f79256","u_url":"https:\/\/www.amazon.co.jp\/dp\/B0BQLQVH1X","a_id":3409706,"p_id":170,"pl_id":27060,"pc_id":185,"s_n":"amazon","u_so":1},{"id":2,"u_tx":"楽天市場で見る","u_bc":"#f76956","u_url":"https:\/\/search.rakuten.co.jp\/search\/mall\/SONGWAY%E7%8C%AB\/","a_id":3409708,"p_id":54,"pl_id":27059,"pc_id":54,"s_n":"rakuten","u_so":2}],"eid":"zSDwo","s":"s"});
+</script>
+<div id="msmaflink-zSDwo">リンク</div>
+<!-- MoshimoAffiliateEasyLink END -->`,
     },
   ],
   "-3sp1Gvn94w": [

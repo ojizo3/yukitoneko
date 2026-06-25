@@ -30,8 +30,11 @@ export default function VideoModalProducts({
 }) {
   const [open, setOpen] = useState(false);
 
-  // 二重防御: 万一空で呼ばれても何も出さない(フックの後で early return)。
-  if (!products || products.length === 0) return null;
+  // EasyLink(かんたんリンク)はこの日記型ボトムシートでは未対応のため除外する。
+  // (full ページの ProductRecommend 側でのみ EasyLink を描画する。モーダルでの
+  //  見せ方は本実装時に別途設計する)。除外後に商品が無ければ何も出さない。
+  const shown = (products ?? []).filter((p) => !p.easyLinkHtml);
+  if (shown.length === 0) return null;
 
   return (
     <>
@@ -114,7 +117,7 @@ export default function VideoModalProducts({
 
           {/* 商品ごとに日記ブロックを縦に重ねる。 */}
           <div className="space-y-7">
-            {products.map((product, i) => (
+            {shown.map((product, i) => (
               <article key={`${product.name}-${i}`}>
                 {/* 写真(あれば主役・16:9)。無ければブロックごと省略して崩れない。 */}
                 {product.image ? (
