@@ -4,12 +4,19 @@
 // 商品配列を書いておくと、その動画ページの解説文の下に商品カードが並ぶ。
 // 登録の無い動画では何も表示されない(既存の見た目に一切影響しない)。
 //
+// 商品の指定方法は2通り(同じ Product 型):
+//   (A) 自前カード … name/image/amazonUrl/rakutenUrl/note を直接書く(従来方式)
+//   (B) EasyLink カード … easyLinkHtml に もしも EasyLink コード全文を貼る。
+//       画像・商品名・Amazon/楽天リンクはコードから自動抽出して
+//       「主役カード」(ProductHeroCard)として動画の右/下に大きく表示する。
+//       note を書くと主役テキストとして併せて表示される。
+//
 // 使い方:
 //   1. 動画ページURL末尾の動画ID(例: /video/AbCdEf12345 の "AbCdEf12345")をキーに
 //   2. 値に商品オブジェクトの配列を書く(1件でも複数でも可)
 //   3. 保存して push すれば、その動画ページに反映される
 //
-// 記入サンプル(1件):
+// 記入サンプル(A: 自前カード):
 //   export const PRODUCTS: Record<string, Product[]> = {
 //     "AbCdEf12345": [
 //       {
@@ -39,9 +46,9 @@ export interface Product {
   note?: string;
   /**
    * もしもアフィリエイト「かんたんリンク」(EasyLink)のコード全文。任意。
-   * これが指定されている商品は、上記 amazonUrl/rakutenUrl/image/note の自前カード
-   * ではなく、もしも配布の EasyLink カード(Amazon・楽天の2ボタン)を描画する。
-   * もしも管理画面でコピーした HTML を丸ごと貼る。
+   * これが指定されている商品は、コードから画像・商品名・Amazon/楽天リンクを抽出し、
+   * 上記 image/amazonUrl/rakutenUrl の代わりに「主役カード」(ProductHeroCard)で描画する。
+   * もしも管理画面でコピーした HTML を丸ごと貼る。note は主役テキストとして併用可。
    */
   easyLinkHtml?: string;
 }
@@ -49,31 +56,20 @@ export interface Product {
 /** 動画ID → 商品配列。最初は空。ここに追記していく。 */
 export const PRODUCTS: Record<string, Product[]> = {
   // ここに videoId: [ { name: "...", ... } ] を追記してください。
-  // 【EasyLink プレビュー検証用・暫定】本来はニシキヘビ用 EasyLink を入れる場所。
-  // 仕組み確認のため、サンプルの SONGWAY 猫じゃらしの EasyLink コードを暫定で投入。
-  // (本実装時は Suu がスプシ H列で管理する正規コードに差し替える)
   "TaBLhrXpS_k": [
     {
-      name: "SONGWAY 猫じゃらし 昆虫 蝶々",
-      easyLinkHtml: `<!-- START MoshimoAffiliateEasyLink -->
-<script type="text/javascript">
-(function(b,c,f,g,a,d,e){b.MoshimoAffiliateObject=a;
-b[a]=b[a]||function(){arguments.currentScript=c.currentScript
-||c.scripts[c.scripts.length-2];(b[a].q=b[a].q||[]).push(arguments)};
-c.getElementById(a)||(d=c.createElement(f),d.src=g,
-d.id=a,e=c.getElementsByTagName("body")[0],e.appendChild(d))})
-(window,document,"script","//dn.msmstatic.com/site/cardlink/bundle.js?20220329","msmaflink");
-msmaflink({"n":"SONGWAY 猫 おもちゃ 猫じゃらし ねこ玩具 昆虫 蝶々 大飛ぶ虫 8個 釣り竿付き","b":"SONGWAY","t":"YJP-070","d":"https:\/\/m.media-amazon.com","c_p":"\/images\/I","p":["\/41YnVpQGqHL._SL500_.jpg"],"u":{"u":"https:\/\/www.amazon.co.jp\/dp\/B0BQLQVH1X","t":"amazon","r_v":""},"v":"2.1","b_l":[{"id":1,"u_tx":"Amazonで見る","u_bc":"#f79256","u_url":"https:\/\/www.amazon.co.jp\/dp\/B0BQLQVH1X","a_id":3409706,"p_id":170,"pl_id":27060,"pc_id":185,"s_n":"amazon","u_so":1},{"id":2,"u_tx":"楽天市場で見る","u_bc":"#f76956","u_url":"https:\/\/search.rakuten.co.jp\/search\/mall\/SONGWAY%E7%8C%AB\/","a_id":3409708,"p_id":54,"pl_id":27059,"pc_id":54,"s_n":"rakuten","u_so":2}],"eid":"zSDwo","s":"s"});
-</script>
-<div id="msmaflink-zSDwo">リンク</div>
-<!-- MoshimoAffiliateEasyLink END -->`,
+      name: "ニシキヘビのぬいぐるみ",
+      amazonUrl: "https://amzn.to/4fPAxHh",
+      note: "北海道旅行の際に水族館で購入したものです。すっかり買った本人は大きく成長してしまい、代わりに猫のトラジがお気に入りで使っています。",
     },
   ],
+  // 【B案 EasyLink 試作・引き戸DIY 1位】もしも EasyLink から素材を抽出して主役カード化。
+  // ※ EasyLink コード内の Amazon URL が [..](..) に化けているため、parseEasyLink が自動修復する。
   "-3sp1Gvn94w": [
     {
-      name: "引き戸用の鍵金具（掛金）",
-      amazonUrl: "https://amzn.to/4w4sj2T",
-      note: "この金具がやっぱり、一番使いやすいです。昔のアパートとかトイレの鍵みたいなところで、見かけたようなものですが、色も豊富にあるし、何より安いしシンプル。回す方のパーツは使わないので、動画をよく見て使ってくださいね。より詳しく説明している[動画②](k9IrGLQp3fs)を見ると、もっと分かりやすく理解できると思います。",
+      name: "ストロング掛金(EasyLink試作・表示名はコードのnを使用)",
+      note: "この金具がやっぱり、一番使いやすいです。昔のアパートとかトイレの鍵みたいなところで見かけたようなものですが、色も豊富で安くシンプル。回す方のパーツは使わないので、動画をよく見て使ってくださいね。",
+      easyLinkHtml: `<!-- START MoshimoAffiliateEasyLink --><script type="text/javascript">(function(b,c,f,g,a,d,e){b.MoshimoAffiliateObject=a;b[a]=b[a]||function(){arguments.currentScript=c.currentScript||c.scripts[c.scripts.length-2];(b[a].q=b[a].q||[]).push(arguments)};c.getElementById(a)||(d=c.createElement(f),d.src=g,d.id=a,e=c.getElementsByTagName("body")[0],e.appendChild(d))})(window,document,"script","//dn.msmstatic.com/site/cardlink/bundle.js?20220329","msmaflink");msmaflink({"n":"ストロング金属(Strong Kinzoku) 清水 ストロング掛金 ステン ポリ袋入 60mm","b":"ストロング金属(Strong Kinzoku)","t":"tr-3801888","d":"https://m.media-amazon.com","c_p":"/images/I","p":["/41jsjnTgqCL._SL500_.jpg","/31JpfbyOnPL._SL500_.jpg","/51gw7Q7TwBL._SL500_.jpg","/41baSDIt60L._SL500_.jpg","/51DWGumr6QL._SL500_.jpg","/218DFIwjdnL._SL500_.jpg","/31-JQ1V8OFL._SL500_.jpg","/41VjetIcDPL._SL500_.jpg"],"u":{"u":"https://[www.amazon.co.jp/dp/B007R9FVBA](https://www.amazon.co.jp/dp/B007R9FVBA)","t":"amazon","r_v":""},"v":"2.1","b_l":[{"id":1,"u_tx":"Amazonで見る","u_bc":"#f79256","u_url":"https://[www.amazon.co.jp/dp/B007R9FVBA](https://www.amazon.co.jp/dp/B007R9FVBA)","a_id":3409706,"p_id":170,"pl_id":27060,"pc_id":185,"s_n":"amazon","u_so":1},{"id":2,"u_tx":"楽天市場で見る","u_bc":"#f76956","u_url":"https://search.rakuten.co.jp/search/mall/%E3%82%B9%E3%83%88%E3%83%AD%E3%83%B3%E3%82%B0%E6%8E%9B%E9%87%91/","a_id":3409708,"p_id":54,"pl_id":27059,"pc_id":54,"s_n":"rakuten","u_so":2}],"eid":"uQ7Rc","s":"s"});</script><div id="msmaflink-uQ7Rc">リンク</div><!-- MoshimoAffiliateEasyLink END -->`,
     },
   ],
   "k9IrGLQp3fs": [

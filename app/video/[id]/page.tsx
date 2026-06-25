@@ -12,6 +12,7 @@ import { getVideo, getRelatedVideos } from "@/lib/youtube";
 import { getDescription } from "@/lib/descriptions";
 import { getProducts } from "@/lib/products";
 import ProductRecommend from "@/components/ProductRecommend";
+import ProductHeroCard from "@/components/ProductHeroCard";
 import { formatViews, formatPublished } from "@/lib/format";
 import { SITE } from "@/lib/config";
 
@@ -85,6 +86,23 @@ export default async function VideoPage({ params }: Params) {
     `https://www.youtube.com/embed/${video.id}` +
     `?autoplay=1&rel=0&modestbranding=1&playsinline=1`;
 
+  // 商品: EasyLink を持つものは「主役カード」として動画の右/下に出す。
+  // それ以外(従来の自前カード)は解説文の下のセクションに出す。
+  const products = getProducts(id);
+  const heroProducts = products.filter((p) => p.easyLinkHtml);
+  const restProducts = products.filter((p) => !p.easyLinkHtml);
+
+  // 縦動画(9:16)プレーヤー本体。配置(中央寄せ or 2カラム左)は下で出し分ける。
+  const player = (
+    <iframe
+      className="h-full w-full"
+      src={src}
+      title={video.title}
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+      allowFullScreen
+    />
+  );
+
   // 構造化データ用の説明文(本文と同じ。空ならサイト説明で補完)
   const jsonLdDescription = description || SITE.description;
 
@@ -101,16 +119,26 @@ export default async function VideoPage({ params }: Params) {
           <span aria-hidden>←</span> 一覧に戻る
         </Link>
 
-        {/* 縦動画(9:16)プレーヤー。横長動画は YouTube 側で自動レターボックス。 */}
-        <div className="mx-auto mt-4 aspect-[9/16] w-full max-w-[420px] overflow-hidden rounded-xl bg-black shadow-lg">
-          <iframe
-            className="h-full w-full"
-            src={src}
-            title={video.title}
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-            allowFullScreen
-          />
-        </div>
+        {/* 動画 + 商品の主役カード。
+            PC(lg〜): 縦動画=左 / 商品カード=右 の2カラムで、スクロールせず同時に見える。
+            スマホ: 縦積みで動画のすぐ下にカード。
+            商品が無い動画では従来どおり中央寄せの動画のみ(見た目は不変)。 */}
+        {heroProducts.length > 0 ? (
+          <div className="mt-4 flex flex-col gap-5 lg:flex-row lg:items-start lg:gap-6">
+            <div className="mx-auto aspect-[9/16] w-full max-w-[420px] shrink-0 overflow-hidden rounded-xl bg-black shadow-lg lg:mx-0 lg:w-[380px]">
+              {player}
+            </div>
+            <div className="flex flex-col gap-4 lg:min-w-0 lg:flex-1">
+              {heroProducts.map((product, i) => (
+                <ProductHeroCard key={`hero-${i}`} product={product} />
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div className="mx-auto mt-4 aspect-[9/16] w-full max-w-[420px] overflow-hidden rounded-xl bg-black shadow-lg">
+            {player}
+          </div>
+        )}
 
         {/* タイトル・メタ */}
         <h1 className="mt-5 text-lg font-bold leading-snug text-ink sm:text-xl">
@@ -125,8 +153,9 @@ export default async function VideoPage({ params }: Params) {
           </p>
         ) : null}
 
-        {/* この動画で使ったもの(アフィリエイト)。商品が無ければ何も出ない。 */}
-        <ProductRecommend products={getProducts(id)} />
+        {/* この動画で使ったもの(従来の自前カード)。該当が無ければ何も出ない。
+            EasyLink の主役カードは上の2カラムで表示済み。 */}
+        <ProductRecommend products={restProducts} />
 
         {/* 関連動画(同じ再生リストから数本) */}
         {related.length > 0 && (
