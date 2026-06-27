@@ -19,6 +19,10 @@ export default function ProductHeroCard({ product }: { product: Product }) {
   const data = product.easyLinkHtml ? parseEasyLink(product.easyLinkHtml) : null;
   if (!data) return null;
 
+  // ボタンの href は「もしも計測リンク」を最優先。組めなければ直リンクにフォールバック。
+  const amazonHref = data.amazonTrackUrl || data.amazonUrl;
+  const rakutenHref = data.rakutenTrackUrl || data.rakutenUrl;
+
   return (
     <article className="overflow-hidden rounded-2xl border border-line bg-bg">
       {/* 商品画像: 主役。正方形エリアいっぱいに大きく見せる。 */}
@@ -44,11 +48,11 @@ export default function ProductHeroCard({ product }: { product: Product }) {
         ) : null}
 
         {/* Amazon / 楽天 ボタン。該当URLがある分だけ。フル幅で押しやすく。 */}
-        {(data.amazonUrl || data.rakutenUrl) && (
+        {(amazonHref || rakutenHref) && (
           <div className="mt-4 flex flex-col gap-2">
-            {data.amazonUrl ? (
+            {amazonHref ? (
               <a
-                href={data.amazonUrl}
+                href={amazonHref}
                 target="_blank"
                 rel="sponsored noopener noreferrer"
                 className="flex w-full items-center justify-center rounded-full border border-line px-4 py-2.5 text-sm font-medium text-ink transition-colors hover:bg-snow"
@@ -56,9 +60,9 @@ export default function ProductHeroCard({ product }: { product: Product }) {
                 Amazonで見る
               </a>
             ) : null}
-            {data.rakutenUrl ? (
+            {rakutenHref ? (
               <a
-                href={data.rakutenUrl}
+                href={rakutenHref}
                 target="_blank"
                 rel="sponsored noopener noreferrer"
                 className="flex w-full items-center justify-center rounded-full border border-line px-4 py-2.5 text-sm font-medium text-ink transition-colors hover:bg-snow"
