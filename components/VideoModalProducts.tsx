@@ -15,13 +15,18 @@
 //   ・日記型カード … 画面下からスライドインするボトムシート(fixed)。
 //        モーダルカードと同じ max-w-lg 中央で、視覚的にモーダル内へ納まる。
 //
-// 物語として見せる: 写真(16:9)を主役に、note を serif 寄りの本文として読ませ、
-// リンクは「Amazonで見てみる →」のテキストリンク調。価格は出さない(Amazon規約)。
-// 外部リンクは sponsored 必須(Google指定)+ noopener noreferrer。末尾に開示表記。
+// 中身の出し分け:
+//   ・EasyLink(もしも計測リンク)商品 … フルページ(app/video/[id]/page.tsx)と同一の
+//        ProductHeroCard をそのまま再利用して描画する(モーダル用に重複実装しない)。
+//   ・旧来の自前カード(image/note/amazonUrl 直書き) … 写真(16:9)を主役に、note を
+//        serif 寄りの本文として読ませる日記ブロックで描画する。
+//        リンクは「Amazonで見てみる →」のテキストリンク調。価格は出さない(Amazon規約)。
+//        外部リンクは sponsored 必須(Google指定)+ noopener noreferrer。末尾に開示表記。
 
 import { useState } from "react";
 import type { Product } from "@/lib/products";
 import { renderNote } from "@/lib/note";
+import ProductHeroCard from "@/components/ProductHeroCard";
 
 export default function VideoModalProducts({
   products,
@@ -30,10 +35,9 @@ export default function VideoModalProducts({
 }) {
   const [open, setOpen] = useState(false);
 
-  // EasyLink(かんたんリンク)はこの日記型ボトムシートでは未対応のため除外する。
-  // (full ページの ProductRecommend 側でのみ EasyLink を描画する。モーダルでの
-  //  見せ方は本実装時に別途設計する)。除外後に商品が無ければ何も出さない。
-  const shown = (products ?? []).filter((p) => !p.easyLinkHtml);
+  // EasyLink 商品はフルページと同一の ProductHeroCard で描画し、旧来の自前カード
+  // (image/note/amazonUrl 直書き)は従来の日記ブロックで描画する。商品ゼロなら出さない。
+  const shown = products ?? [];
   if (shown.length === 0) return null;
 
   return (
@@ -115,63 +119,68 @@ export default function VideoModalProducts({
             </button>
           </div>
 
-          {/* 商品ごとに日記ブロックを縦に重ねる。 */}
+          {/* 商品ごとに縦に重ねる。EasyLink は主役カード、旧来品は日記ブロック。 */}
           <div className="space-y-7">
-            {shown.map((product, i) => (
-              <article key={`${product.name}-${i}`}>
-                {/* 写真(あれば主役・16:9)。無ければブロックごと省略して崩れない。 */}
-                {product.image ? (
-                  <div className="aspect-video w-full overflow-hidden rounded-xl bg-snow">
-                    {/* 自前写真。VideoCard と同じく素の img(遅延読み込み)。 */}
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={product.image}
-                      alt={product.name}
-                      loading="lazy"
-                      className="h-full w-full object-cover"
-                    />
-                  </div>
-                ) : null}
+            {shown.map((product, i) =>
+              product.easyLinkHtml ? (
+                // EasyLink 商品: フルページと同一の主役カードをそのまま再利用。
+                <ProductHeroCard key={`hero-${i}`} product={product} />
+              ) : (
+                <article key={`${product.name}-${i}`}>
+                  {/* 写真(あれば主役・16:9)。無ければブロックごと省略して崩れない。 */}
+                  {product.image ? (
+                    <div className="aspect-video w-full overflow-hidden rounded-xl bg-snow">
+                      {/* 自前写真。VideoCard と同じく素の img(遅延読み込み)。 */}
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={product.image}
+                        alt={product.name}
+                        loading="lazy"
+                        className="h-full w-full object-cover"
+                      />
+                    </div>
+                  ) : null}
 
-                <h3 className="mt-3 text-sm font-medium leading-snug text-ink">
-                  {product.name}
-                </h3>
+                  <h3 className="mt-3 text-sm font-medium leading-snug text-ink">
+                    {product.name}
+                  </h3>
 
-                {/* note を本文として大きめ・serif 寄りで読ませる。
-                    [ラベル](値) の記法は renderNote が内部/外部リンクに変換。 */}
-                {product.note ? (
-                  <p className="font-serif-jp mt-2 text-[15px] leading-loose text-ink/85">
-                    {renderNote(product.note)}
-                  </p>
-                ) : null}
+                  {/* note を本文として大きめ・serif 寄りで読ませる。
+                      [ラベル](値) の記法は renderNote が内部/外部リンクに変換。 */}
+                  {product.note ? (
+                    <p className="font-serif-jp mt-2 text-[15px] leading-loose text-ink/85">
+                      {renderNote(product.note)}
+                    </p>
+                  ) : null}
 
-                {/* リンク: テキストリンク調。該当URLがある分だけ。 */}
-                {(product.amazonUrl || product.rakutenUrl) && (
-                  <div className="mt-3 flex flex-col gap-1.5">
-                    {product.amazonUrl ? (
-                      <a
-                        href={product.amazonUrl}
-                        target="_blank"
-                        rel="sponsored noopener noreferrer"
-                        className="inline-flex w-fit items-center text-sm text-ink underline decoration-line underline-offset-4 transition-colors hover:decoration-ink"
-                      >
-                        Amazonで見てみる&nbsp;→
-                      </a>
-                    ) : null}
-                    {product.rakutenUrl ? (
-                      <a
-                        href={product.rakutenUrl}
-                        target="_blank"
-                        rel="sponsored noopener noreferrer"
-                        className="inline-flex w-fit items-center text-sm text-ink underline decoration-line underline-offset-4 transition-colors hover:decoration-ink"
-                      >
-                        楽天で見てみる&nbsp;→
-                      </a>
-                    ) : null}
-                  </div>
-                )}
-              </article>
-            ))}
+                  {/* リンク: テキストリンク調。該当URLがある分だけ。 */}
+                  {(product.amazonUrl || product.rakutenUrl) && (
+                    <div className="mt-3 flex flex-col gap-1.5">
+                      {product.amazonUrl ? (
+                        <a
+                          href={product.amazonUrl}
+                          target="_blank"
+                          rel="sponsored noopener noreferrer"
+                          className="inline-flex w-fit items-center text-sm text-ink underline decoration-line underline-offset-4 transition-colors hover:decoration-ink"
+                        >
+                          Amazonで見てみる&nbsp;→
+                        </a>
+                      ) : null}
+                      {product.rakutenUrl ? (
+                        <a
+                          href={product.rakutenUrl}
+                          target="_blank"
+                          rel="sponsored noopener noreferrer"
+                          className="inline-flex w-fit items-center text-sm text-ink underline decoration-line underline-offset-4 transition-colors hover:decoration-ink"
+                        >
+                          楽天で見てみる&nbsp;→
+                        </a>
+                      ) : null}
+                    </div>
+                  )}
+                </article>
+              ),
+            )}
           </div>
 
           {/* アフィリエイト開示表記(ステマ規制対応・必須)。 */}
